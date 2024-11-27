@@ -1,0 +1,105 @@
+<?php
+
+$servername = "localhost";
+
+$dbusername = "root";
+
+$dbpassword = "";
+
+$dbname = "bloosom";
+
+
+
+// Create connection
+
+$conn = new mysqli($servername, $dbusername, $dbpassword, $dbname);
+
+
+
+// Check connection
+
+if ($conn->connect_error) {
+
+    die("Connection failed: " . $conn->connect_error);
+
+}
+
+
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    // Process form data
+
+    $username = isset($_POST["username"]) ? trim($_POST["username"]) : '';
+
+    $password = isset($_POST["password"]) ? trim($_POST["password"]) : '';
+
+
+
+    // Check if both fields are filled
+
+    if (empty($username) || empty($password)) {
+
+        echo "Please fill in both fields.";
+
+        exit();
+
+    }
+
+
+
+    // Check if user exists for login
+
+    $sql = "SELECT * FROM login WHERE username='$username'";
+
+    $result = $conn->query($sql);
+
+
+
+    if ($result->num_rows > 0) {
+
+        // User exists, now check password
+
+        $row = $result->fetch_assoc();
+
+        if ($row['password'] === $password) {
+
+            // Password matches
+
+            header("Location: home.html");
+
+            exit();
+
+        } else {
+
+            // Password does not match
+
+            echo "Incorrect password. Please try again or <a href='signup.html'>sign up</a>.";
+
+        }
+
+    } else {
+
+        // User does not exist, insert into database for signup
+
+        $sql = "INSERT INTO login (username, password) VALUES ('$username', '$password')";
+
+        if ($conn->query($sql) === TRUE) {
+
+            echo "New record created successfully. You can now <a href='login.html'>login</a>.";
+
+        } else {
+
+            echo "Error: " . $sql . "<br>" . $conn->error;
+
+        }
+
+    }
+
+}
+
+
+
+$conn->close();
+
+?>
